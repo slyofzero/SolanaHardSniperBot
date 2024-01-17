@@ -1,6 +1,6 @@
 import { WhereFilterOp } from "firebase-admin/firestore";
 import { db } from "./config";
-import { firebaseCollectionPrefix } from "@/utils";
+import { firebaseCollectionPrefix } from "@/utils/constants";
 
 interface addDocumentInterface {
   data: object;

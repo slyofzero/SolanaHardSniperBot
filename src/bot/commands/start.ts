@@ -1,5 +1,5 @@
 import { BotCommandContextType } from "@/types";
-import { sendMessage } from "@/utils";
+import { sendMessage } from "@/utils/bot";
 import { InlineKeyboard } from "grammy";
 
 export async function startBot(ctx: BotCommandContextType) {
