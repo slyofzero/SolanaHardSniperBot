@@ -9,3 +9,8 @@ export function stopScript(message: string, exitCode?: number) {
   log(message);
   process.exit(exitCode || 1);
 }
+
+export function errorHandler(e: unknown) {
+  const error = e as Error;
+  log(`Error: ${error.message}`);
+}

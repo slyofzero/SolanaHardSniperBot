@@ -1,4 +1,4 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-export const { BOT_TOKEN, FIREBASE_KEY, TRENDING_TOKENS_API } = process.env;
+export const { RPC_ENDPOINT, TOKEN_URL, REVENUE_SHARE_ACCOUNT, SECRET_KEY } = process.env;

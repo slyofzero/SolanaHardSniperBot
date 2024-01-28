@@ -1,9 +1,10 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      BOT_TOKEN: string | undefined;
-      FIREBASE_KEY: string | undefined;
-      TRENDING_TOKENS_API: string | undefined;
+      RPC_ENDPOINT: string | undefined;
+      TOKEN_URL: string | undefined;
+      REVENUE_SHARE_ACCOUNT: string | undefined;
+      SECRET_KEY: string | undefined;
     }
   }
 }

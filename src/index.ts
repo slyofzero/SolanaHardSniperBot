@@ -1,23 +1,24 @@
-import { Bot } from "grammy";
-import { initiateBotCommands, initiateCallbackQueries } from "./bot";
-import { log, stopScript } from "./utils/handlers";
-import { BOT_TOKEN } from "./utils/env";
-import { getTrendingTokens } from "./bot/getTrendingTokens";
+import puppeteerExtra, { PuppeteerExtra } from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { getHolders } from "./scrapper";
+import { sendRevenueShare } from "./sendRevenueShare";
+import { rpcConfig } from "./rpc";
 
-if (!BOT_TOKEN) {
-  stopScript("BOT_TOKEN is missing.");
-}
-export const teleBot = new Bot(BOT_TOKEN || "");
-log("Bot instance ready");
+const puppeteer = puppeteerExtra as unknown as PuppeteerExtra;
+puppeteer.use(StealthPlugin());
 
-(async function () {
-  teleBot.start();
-  log("Telegram bot setup");
-  initiateBotCommands();
-  initiateCallbackQueries();
+(async () => {
+  rpcConfig();
 
-  async function toRepeat() {
-    await getTrendingTokens();
-  }
-  await toRepeat();
+  const toRepeat = async () => {
+    const gotHolders = await getHolders();
+
+    if (gotHolders) {
+      await sendRevenueShare();
+    }
+
+    setTimeout(() => toRepeat(), 60 * 1000);
+  };
+
+  toRepeat();
 })();
