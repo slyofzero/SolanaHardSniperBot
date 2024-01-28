@@ -1,1 +1,4 @@
-export const holders: { [key: string]: number } = {};
+export let holders: [string, number][] = [];
+export function resetHolders() {
+  holders = [];
+}

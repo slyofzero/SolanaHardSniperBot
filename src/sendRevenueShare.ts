@@ -5,6 +5,7 @@ import { log } from "./utils/handlers";
 import { holders } from "./vars";
 import { sendTransaction } from "./utils/web3";
 import { decode } from "bs58";
+import { sleep } from "./utils/time";
 
 export async function sendRevenueShare() {
   if (!REVENUE_SHARE_ACCOUNT || !SECRET_KEY) {
@@ -18,11 +19,17 @@ export async function sendRevenueShare() {
   const revenueShareAccount = new web3.PublicKey(REVENUE_SHARE_ACCOUNT);
   const revenueShareBalance = await solanaConnection.getBalance(revenueShareAccount);
 
-  for (const holder in holders) {
-    const holding = holders[holder];
-    const holderShare = Math.floor((revenueShareBalance * holding) / 100);
+  for (const [index, [holder, holding]] of holders.entries()) {
+    let amount = 0;
 
-    const signature = await sendTransaction(account, holderShare, holder);
+    if (index === holders.length - 1) {
+      await sleep(30000);
+      amount = await solanaConnection.getBalance(revenueShareAccount);
+    } else {
+      amount = Math.floor((revenueShareBalance * holding) / 100);
+    }
+
+    const signature = await sendTransaction(account, amount, holder);
     log(`Txn sent ${signature}`);
   }
 }

@@ -34,15 +34,17 @@ export async function getHolders() {
         for (const row of rows) {
           const columns = await row.$$("td");
 
-          const address = (await page.evaluate((el) => el.textContent, columns[1]))?.trim();
+          const href = await columns[2].$eval("a", (anchor) => anchor.getAttribute("href"));
+          const address = href?.split("/").at(-1);
+
           const holding = Number(
             (await page.evaluate((el) => el.textContent, columns[4]))?.replace("%", "")
           );
 
           if (address) {
             if (holding >= 1) {
-              holders[address] = holding;
               totalHolding += holding;
+              holders.push([address, holding]);
             } else {
               break extractingHolders;
             }
@@ -59,10 +61,9 @@ export async function getHolders() {
     }
   }
 
-  for (const holder in holders) {
-    const holding = holders[holder];
+  for (const [index, [holder, holding]] of holders.entries()) {
     const newHolding = parseFloat(((holding / totalHolding) * 100).toFixed(4)); // holding in proportion to holders with >1% holding
-    holders[holder] = newHolding;
+    holders[index] = [holder, newHolding];
   }
 
   await browser.close();

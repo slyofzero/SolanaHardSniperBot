@@ -17,7 +17,7 @@ puppeteer.use(StealthPlugin());
       await sendRevenueShare();
     }
 
-    setTimeout(() => toRepeat(), 60 * 1000);
+    setTimeout(() => toRepeat(), 24 * 60 * 60 * 1000);
   };
 
   toRepeat();
