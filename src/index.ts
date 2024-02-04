@@ -1,24 +1,23 @@
-import puppeteerExtra, { PuppeteerExtra } from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { getHolders } from "./scrapper";
-import { sendRevenueShare } from "./sendRevenueShare";
-import { rpcConfig } from "./rpc";
+import { Bot } from "grammy";
+import { initiateBotCommands, initiateCallbackQueries } from "./bot";
+import { log } from "./utils/handlers";
+import { BOT_TOKEN } from "./utils/env";
 
-const puppeteer = puppeteerExtra as unknown as PuppeteerExtra;
-puppeteer.use(StealthPlugin());
+export const teleBot = new Bot(BOT_TOKEN || "");
+log("Bot instance ready");
 
-(async () => {
-  rpcConfig();
+// Check for new transfers at every 20 seconds
+const interval = 20;
 
-  const toRepeat = async () => {
-    const gotHolders = await getHolders();
+(async function () {
+  teleBot.start();
+  log("Telegram bot setup");
+  initiateBotCommands();
+  initiateCallbackQueries();
 
-    if (gotHolders) {
-      await sendRevenueShare();
-    }
-
-    setTimeout(() => toRepeat(), 24 * 60 * 60 * 1000);
-  };
-
-  toRepeat();
+  async function toRepeat() {
+    //
+    setTimeout(toRepeat, interval * 1e3);
+  }
+  await toRepeat();
 })();
