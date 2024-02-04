@@ -1,1 +1,1 @@
-export const firebaseCollectionPrefix = "_ton_trending_bot";
+export const BUYS_THRESHOLD = 150;
