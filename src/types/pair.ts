@@ -16,6 +16,13 @@ interface TimeFrameStats {
   h24: TransactionStats;
 }
 
+interface TimeFrameData {
+  m5: number;
+  h1: number;
+  h6: number;
+  h24: number;
+}
+
 export interface PairData {
   chainId: string;
   dexId: string;
@@ -26,13 +33,13 @@ export interface PairData {
   price: string;
   priceUsd: string;
   txns: TimeFrameStats;
-  buyers: TimeFrameStats;
-  sellers: TimeFrameStats;
-  makers: TimeFrameStats;
-  volume: TimeFrameStats;
-  volumeBuy: TimeFrameStats;
-  volumeSell: TimeFrameStats;
-  priceChange: TimeFrameStats;
+  buyers: TimeFrameData;
+  sellers: TimeFrameData;
+  makers: TimeFrameData;
+  volume: TimeFrameData;
+  volumeBuy: TimeFrameData;
+  volumeSell: TimeFrameData;
+  priceChange: TimeFrameData;
   liquidity: {
     usd: number;
     base: number;

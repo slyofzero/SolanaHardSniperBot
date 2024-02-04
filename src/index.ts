@@ -5,6 +5,8 @@ import { BOT_TOKEN, WSS_URL } from "./utils/env";
 import WebSocket from "ws";
 import { PairData } from "./types";
 import { sendAlert } from "./bot/sendAlert";
+import { cleanUpSnipeTokens } from "./bot/cleanUpSnipeTokens";
+import { CHECK_INTERVAL } from "./utils/constants";
 
 if (!BOT_TOKEN || !WSS_URL) {
   log("BOT_TOKEN or WSS_URL is missing");
@@ -52,4 +54,6 @@ const headers = {
 
     if (pairs) sendAlert(pairs);
   });
+
+  setInterval(cleanUpSnipeTokens, CHECK_INTERVAL);
 })();
