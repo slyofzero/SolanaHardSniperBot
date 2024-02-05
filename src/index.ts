@@ -6,7 +6,7 @@ import WebSocket from "ws";
 import { PairData } from "./types";
 import { sendAlert } from "./bot/sendAlert";
 import { cleanUpSnipeTokens } from "./bot/cleanUpSnipeTokens";
-import { CHECK_INTERVAL } from "./utils/constants";
+import { CLEANUP_INTERVAL } from "./utils/constants";
 
 if (!BOT_TOKEN || !WSS_URL) {
   log("BOT_TOKEN or WSS_URL is missing");
@@ -38,22 +38,27 @@ const headers = {
 
   const ws = new WebSocket(WSS_URL, { headers });
 
-  ws.on("open", function open() {
-    log("connected");
-  });
+  function connectWebSocket() {
+    ws.on("open", function open() {
+      log("connected");
+    });
 
-  ws.on("close", function close() {
-    log("disconnected");
-  });
+    ws.on("close", function close() {
+      log("disconnected");
+      process.exit(1);
+    });
 
-  ws.on("message", function incoming(event: Buffer) {
-    const str = event.toString();
-    const data = JSON.parse(str) as { pairs: PairData[] };
+    ws.on("message", function incoming(event: Buffer) {
+      const str = event.toString();
+      const data = JSON.parse(str) as { pairs: PairData[] };
 
-    const { pairs } = data;
+      const { pairs } = data;
 
-    if (pairs) sendAlert(pairs);
-  });
+      if (pairs) sendAlert(pairs);
+    });
 
-  setInterval(cleanUpSnipeTokens, CHECK_INTERVAL);
+    setInterval(cleanUpSnipeTokens, CLEANUP_INTERVAL * 1e3);
+  }
+
+  connectWebSocket();
 })();

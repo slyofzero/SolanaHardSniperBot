@@ -1,5 +1,5 @@
 import { PairData } from "@/types";
-import { BUYS_THRESHOLD, excludedTokens } from "@/utils/constants";
+import { AGE_THRESHOLD, BUYS_THRESHOLD } from "@/utils/constants";
 import { formatToInternational } from "@/utils/general";
 import { hardSnipedTokens } from "@/vars/tokens";
 import { teleBot } from "..";
@@ -15,35 +15,37 @@ export async function sendAlert(pairs: PairData[]) {
     process.exit(1);
   }
 
-  for (const pair of pairs) {
+  pairChecker: for (const pair of pairs) {
     const { baseToken, txns } = pair;
     const { address, name, symbol } = baseToken;
     const { buys } = txns.m5;
 
-    if (buys > BUYS_THRESHOLD && !hardSnipedTokens[address] && !excludedTokens.includes(address)) {
-      hardSnipedTokens[address] = Math.floor(Date.now() / 1e3);
+    if (buys > BUYS_THRESHOLD && !hardSnipedTokens[address]) {
       const { marketCap, volume, liquidity, priceUsd, pairAddress, pairCreatedAt } = pair;
       const age = moment(pairCreatedAt).fromNow();
+
+      if (!age.includes("minutes")) continue pairChecker;
+      const ageMinutes = Number(age.replace("minutes ago", ""));
+      if (ageMinutes > AGE_THRESHOLD) continue pairChecker;
+
+      hardSnipedTokens[address] = Math.floor(Date.now() / 1e3);
 
       const tokenLink = `https://solscan.io/token/${address}`;
       const dexScreenerLink = `https://dexscreener.com/solana/${pairAddress}`;
       const dexToolsLink = `https://www.dextools.io/app/en/solana/pair-explorer/${pairAddress}`;
 
-      // Text
-      let text = `🎯 Hard Sniped Alert
+      const text = `🎯 Hard Sniped Alert
 
-🪙 ${hardCleanUpBotMessage(name)} [${symbol}](${tokenLink})
-💲 Price: $${formatToInternational(parseFloat(priceUsd))}
+🪙 ${hardCleanUpBotMessage(name)} [${hardCleanUpBotMessage(symbol)}](${tokenLink})
+💲 Price: $${cleanUpBotMessage(formatToInternational(parseFloat(priceUsd)))}
 🌀 Hard Sniped ${buys} times
 
-📈 Volume: $${formatToInternational(volume.m5)}
-💰 Mcap: $${formatToInternational(marketCap)}
-💧 Liquidity: $${formatToInternational(liquidity.usd)}
+📈 Volume: $${cleanUpBotMessage(formatToInternational(volume.m5))}
+💰 Mcap: $${cleanUpBotMessage(formatToInternational(marketCap))}
+💧 Liquidity: $${cleanUpBotMessage(formatToInternational(liquidity.usd))}
 ⌛ Token Created: ${age}
 
 CA: \`${address}\``;
-
-      text = cleanUpBotMessage(text);
 
       // Inline Keyboard
       const keyboard = new InlineKeyboard()
@@ -58,7 +60,10 @@ CA: \`${address}\``;
           disable_web_page_preview: true,
         })
         .then(() => log(`Sent message for ${address}`))
-        .catch((e) => errorHandler(e));
+        .catch((e) => {
+          log(text);
+          errorHandler(e);
+        });
     }
   }
 }
