@@ -5,6 +5,7 @@ declare global {
       BOT_USERNAME: string | undefined;
       WSS_URL: string | undefined;
       CHANNEL_ID: string | undefined;
+      HELIUS_API_KEY: string | undefined;
     }
   }
 }

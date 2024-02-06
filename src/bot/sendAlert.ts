@@ -1,6 +1,6 @@
 import { PairData } from "@/types";
 import { AGE_THRESHOLD, BUYS_THRESHOLD } from "@/utils/constants";
-import { formatToInternational } from "@/utils/general";
+import { formatToInternational, toTitleCase } from "@/utils/general";
 import { hardSnipedTokens } from "@/vars/tokens";
 import { teleBot } from "..";
 import { cleanUpBotMessage, hardCleanUpBotMessage } from "@/utils/bot";
@@ -8,6 +8,7 @@ import { CHANNEL_ID } from "@/utils/env";
 import { InlineKeyboard } from "grammy";
 import { errorHandler, log } from "@/utils/handlers";
 import moment from "moment";
+import { getTokenMetaData } from "@/utils/api";
 
 export async function sendAlert(pairs: PairData[]) {
   if (!CHANNEL_ID) {
@@ -21,7 +22,14 @@ export async function sendAlert(pairs: PairData[]) {
     const { buys } = txns.m5;
 
     if (buys > BUYS_THRESHOLD && !hardSnipedTokens[address]) {
-      const { marketCap, volume, liquidity, priceUsd, pairAddress, pairCreatedAt } = pair;
+      const {
+        marketCap,
+        volume,
+        liquidity,
+        priceUsd,
+        pairAddress,
+        pairCreatedAt,
+      } = pair;
       const age = moment(pairCreatedAt).fromNow();
 
       if (!age.includes("minutes")) continue pairChecker;
@@ -30,15 +38,33 @@ export async function sendAlert(pairs: PairData[]) {
 
       hardSnipedTokens[address] = Math.floor(Date.now() / 1e3);
 
+      // Links
       const tokenLink = `https://solscan.io/token/${address}`;
       const dexScreenerLink = `https://dexscreener.com/solana/${pairAddress}`;
       const dexToolsLink = `https://www.dextools.io/app/en/solana/pair-explorer/${pairAddress}`;
 
+      // Metadata
+      const metadata = await getTokenMetaData(address);
+      if (!metadata) continue;
+
+      const socials = [];
+      for (const [social, socialLink] of Object.entries(
+        metadata.offChainMetadata?.metadata?.extensions || {}
+      )) {
+        socials.push(`[${toTitleCase(social)}](${socialLink})`);
+      }
+      const socialsText = socials.join(" \\| ") || "No links available";
+
+      // Text
       const text = `🎯 Hard Sniped Alert
 
-🪙 ${hardCleanUpBotMessage(name)} [${hardCleanUpBotMessage(symbol)}](${tokenLink})
+🪙 ${hardCleanUpBotMessage(name)} [${hardCleanUpBotMessage(
+        symbol
+      )}](${tokenLink})
 💲 Price: $${cleanUpBotMessage(formatToInternational(parseFloat(priceUsd)))}
 🌀 Hard Sniped ${buys} times
+
+🫧 Socials: ${socialsText}
 
 📈 Volume: $${cleanUpBotMessage(formatToInternational(volume.m5))}
 💰 Mcap: $${cleanUpBotMessage(formatToInternational(marketCap))}
