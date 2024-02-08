@@ -21,5 +21,5 @@ export async function getTokenMetaData(token: string) {
   });
 
   const data = (await response.json()) as TokenMetadata[];
-  return data.at(0);
+  return data?.at(0);
 }
