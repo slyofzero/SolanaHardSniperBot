@@ -8,18 +8,22 @@ export async function apiFetcher<T>(url: string) {
 }
 
 export async function getTokenMetaData(token: string) {
-  const response = await fetch(heliusUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      mintAccounts: [token],
-      includeOffChain: true,
-      disableCache: false,
-    }),
-  });
+  try {
+    const response = await fetch(heliusUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mintAccounts: [token],
+        includeOffChain: true,
+        disableCache: false,
+      }),
+    });
 
-  const data = (await response.json()) as TokenMetadata[];
-  return data?.at(0);
+    const data = (await response.json()) as TokenMetadata[];
+    return data?.at(0);
+  } catch (error) {
+    return undefined;
+  }
 }

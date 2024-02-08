@@ -45,11 +45,10 @@ export async function sendAlert(pairs: PairData[]) {
 
       // Metadata
       const metadata = await getTokenMetaData(address);
-      if (!metadata) continue;
 
       const socials = [];
       for (const [social, socialLink] of Object.entries(
-        metadata.offChainMetadata?.metadata?.extensions || {}
+        metadata?.offChainMetadata?.metadata?.extensions || {}
       )) {
         socials.push(`[${toTitleCase(social)}](${socialLink})`);
       }
