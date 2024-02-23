@@ -1,5 +1,5 @@
-import { TokenMetadata } from "@/types";
-import { heliusUrl } from "./constants";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { Metaplex } from "@metaplex-foundation/js";
 
 export async function apiFetcher<T>(url: string) {
   const response = await fetch(url);
@@ -9,20 +9,29 @@ export async function apiFetcher<T>(url: string) {
 
 export async function getTokenMetaData(token: string) {
   try {
-    const response = await fetch(heliusUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        mintAccounts: [token],
-        includeOffChain: true,
-        disableCache: false,
-      }),
-    });
+    const connection = new Connection("https://api.mainnet-beta.solana.com");
+    const metaplex = Metaplex.make(connection);
 
-    const data = (await response.json()) as TokenMetadata[];
-    return data?.at(0);
+    const mintAddress = new PublicKey(token);
+
+    const metadataAccount = metaplex
+      .nfts()
+      .pdas()
+      .metadata({ mint: mintAddress });
+
+    const metadataAccountInfo = await connection.getAccountInfo(
+      metadataAccount
+    );
+
+    if (!metadataAccountInfo) {
+      throw Error("Metadata account not found");
+    }
+
+    const tokenData = await metaplex
+      .nfts()
+      .findByMint({ mintAddress: mintAddress });
+
+    return tokenData;
   } catch (error) {
     return undefined;
   }

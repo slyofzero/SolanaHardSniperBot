@@ -29,6 +29,8 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@metaplex-foundation/js": "^0.20.1",
+    "@solana/web3.js": "^1.90.0",
     "dotenv": "^16.3.1",
     "grammy": "^1.20.3",
     "moment": "^2.29.4",

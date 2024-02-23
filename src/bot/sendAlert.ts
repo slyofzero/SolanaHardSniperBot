@@ -22,14 +22,7 @@ export async function sendAlert(pairs: PairData[]) {
     const { buys } = txns.m5;
 
     if (buys > BUYS_THRESHOLD && !hardSnipedTokens[address]) {
-      const {
-        marketCap,
-        volume,
-        liquidity,
-        priceUsd,
-        pairAddress,
-        pairCreatedAt,
-      } = pair;
+      const { marketCap, volume, liquidity, pairAddress, pairCreatedAt } = pair;
       const age = moment(pairCreatedAt).fromNow();
 
       if (!age.includes("minutes")) continue pairChecker;
@@ -48,11 +41,12 @@ export async function sendAlert(pairs: PairData[]) {
 
       const socials = [];
       for (const [social, socialLink] of Object.entries(
-        metadata?.offChainMetadata?.metadata?.extensions || {}
+        metadata?.json?.extensions || {}
       )) {
         socials.push(`[${toTitleCase(social)}](${socialLink})`);
       }
       const socialsText = socials.join(" \\| ") || "No links available";
+      // 💲 Price: $${cleanUpBotMessage(formatToInternational(parseFloat(priceUsd)))}
 
       // Text
       const text = `🎯 Hard Sniped Alert
@@ -60,9 +54,7 @@ export async function sendAlert(pairs: PairData[]) {
 🪙 ${hardCleanUpBotMessage(name)} [${hardCleanUpBotMessage(
         symbol
       )}](${tokenLink})
-💲 Price: $${cleanUpBotMessage(formatToInternational(parseFloat(priceUsd)))}
 🌀 Hard Sniped ${buys} times
-
 🫧 Socials: ${socialsText}
 
 📈 Volume: $${cleanUpBotMessage(formatToInternational(volume.m5))}
